@@ -6,6 +6,8 @@ import javax.swing.JPanel;
 
 public class MainPanel extends JPanel implements Runnable
 {
+	private static final short OFF = 0, ON1 = 1, ON2 = 2, ERROR = -1;
+	
 	private GraphPanel graphP;
 	private IndicatorPanel indicatorP;
 	private ButtonPanel buttonP;
@@ -44,9 +46,55 @@ public class MainPanel extends JPanel implements Runnable
 	{
 		while (running == true)
 		{
-			this.graphP.repaint();
-			this.indicatorP.repaint();
-			this.buttonP.repaint();
+			updatePar();
+			updatePanel();
+		}
+	}
+	
+	
+	private void updatePanel()
+	{
+		this.graphP.repaint();
+		this.indicatorP.repaint();
+		this.buttonP.repaint();
+	}
+	
+	
+	private void updatePar()
+	{
+		if (this.buttonP.getAction() == true)
+		{
+			boolean[] ledArr = this.buttonP.getLedArr();
+			
+			int index = 0;
+			while (ledArr[index] != true)
+			{
+				index++;
+			}
+			
+			switch (index)
+			{
+			case 0: this.indicatorP.setLedState(0, ON1);
+					this.indicatorP.setLedState(1, ON1);
+					this.indicatorP.setLedState(2, OFF);
+					this.indicatorP.setLedState(4, ON2);
+					this.indicatorP.setLedState(6, OFF);
+					break;
+					
+			case 1: this.indicatorP.setLedState(0, ON2);
+					this.indicatorP.setLedState(1, OFF);
+					this.indicatorP.setLedState(2, ON2);
+					this.indicatorP.setLedState(4, OFF);
+					this.indicatorP.setLedState(6, OFF);
+					break;
+					
+			case 4: this.indicatorP.setLedState(0, OFF);
+					this.indicatorP.setLedState(1, OFF);
+					this.indicatorP.setLedState(2, ON2);
+					this.indicatorP.setLedState(4, OFF);
+					this.indicatorP.setLedState(6, ON2);
+					break;
+			}
 		}
 	}
 
