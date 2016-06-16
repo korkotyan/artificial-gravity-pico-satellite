@@ -43,7 +43,7 @@ public class IndicatorPanel extends JPanel
 	/*
 	 * Initializes the Jpanel's parameters
 	 */
-	public void initializeIndicatorP()
+	private void initializeIndicatorP()
 	{
 		setBackground(Color.WHITE);
 		this.setPreferredSize(new Dimension(this.getX(), this.getY()));
@@ -51,9 +51,9 @@ public class IndicatorPanel extends JPanel
 	
 	
 	/*
-	 * initialized the IndicatorPanel's parameters
+	 * Initialized the IndicatorPanel's local parameters
 	 */
-	public void initializeIndicatorVar()
+	private void initializeIndicatorVar()
 	{
 		this.ledArr = new int[NUM_OF_LEDS];
 		ledsOff();
@@ -167,9 +167,10 @@ public class IndicatorPanel extends JPanel
 	{
 		g2d.setFont(LED_F);
 		
+		int tmpCalc;
 		for (int i = 0; i < NUM_OF_LEDS; i++)
 		{
-			int tmpCalc = (LED_DIAMETER + INTERVALS) * i;
+			tmpCalc = (LED_DIAMETER + INTERVALS) * i;
 			g2d.drawString(LED_STRINGS[i], 10, LED_STA_Y + tmpCalc + 25);
 			
 			g2d.setColor(Color.DARK_GRAY);

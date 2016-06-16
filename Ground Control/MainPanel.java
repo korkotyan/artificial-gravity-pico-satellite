@@ -14,33 +14,71 @@ public class MainPanel extends JPanel implements Runnable
 
 	private boolean running;
 
+	
+	/*
+	 * MainPanel constructor
+	 */
 	public MainPanel()
 	{
-		creatPanels();
+		createPanels();
 		initialize();
 	}
 
-	public void creatPanels()
+	
+	
+	/*
+	 * Creates the panels which are going to be places on this panel  
+	 */
+	public void createPanels()
 	{
 		this.graphP = new GraphPanel();
 		this.indicatorP = new IndicatorPanel();
 		this.buttonP = new ButtonPanel();
 	}
 
+	
+	/*
+	 * Initializes the whole panel, calls initializeMainP() and InitializeMainVar()
+	 */
 	public void initialize()
 	{
+		initializeMainP();
+		initializeMainVar();
+	}
+	
+	
+	
+	/*
+	 * Initializes the Jpanel's parameters
+	 */
+	private void initializeMainP()
+	{
 		this.setLayout(new BorderLayout());
+		
+		//setBackground(Color.BLUE);
+	}
+	
+	
+	
+	/*
+	 * Initialized the MainPanel's local parameters
+	 */
+	private void initializeMainVar()
+	{
 		add(this.graphP, BorderLayout.EAST);
 		add(this.indicatorP, BorderLayout.CENTER);
 		add(this.buttonP, BorderLayout.SOUTH);
-
-		//setBackground(Color.BLUE);
 
 		this.running  = true;
 		(new Thread(this)).start();
 	}
 
 
+	
+	
+	/*
+	 * The run function of the runnable implementation (Engine)
+	 */
 	@Override
 	public void run()
 	{
@@ -52,6 +90,11 @@ public class MainPanel extends JPanel implements Runnable
 	}
 	
 	
+	
+	
+	/*
+	 * Draws all the panels
+	 */
 	private void updatePanel()
 	{
 		this.graphP.repaint();
@@ -60,6 +103,11 @@ public class MainPanel extends JPanel implements Runnable
 	}
 	
 	
+	
+	
+	/*
+	 * Reads value from panels and updates other panels
+	 */
 	private void updatePar()
 	{
 		if (this.buttonP.getAction() == true)
@@ -95,6 +143,31 @@ public class MainPanel extends JPanel implements Runnable
 					this.indicatorP.setLedState(6, ON2);
 					break;
 			}
+			
+			
+			if (ledArr[2] == true)
+			{
+				double g = this.buttonP.getTextFieldVal();
+				if (g != -1)
+				{
+					this.graphP.setDesG(g);
+					this.graphP.setDesRpm(-1);
+				}
+			}
+			else
+			{
+				if (ledArr[3] == true)
+				{
+					int rpm = (int)this.buttonP.getTextFieldVal();
+					if (rpm != -1)
+					{
+						this.graphP.setDesRpm(rpm);
+						this.graphP.setDesG(-1);
+					}
+				}
+			}
+			
+			
 		}
 	}
 

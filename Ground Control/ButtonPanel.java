@@ -24,19 +24,27 @@ public class ButtonPanel extends JPanel
 	private JButton start, stop, confirm, editCode;
 	private JTextField gForce, rpm;
 
-	private String prevG = "g force", prevRpm = "rpm";
+	//private String prevG = "", prevRpm = "";
 
 	private boolean action;
 
 	private boolean [] ledArr;
 
+	
+	/*
+	 * ButtonPanel constructor
+	 */
 	public ButtonPanel()
 	{
 		initializeButtonP();
 		initializeButtonVar();
 	}
-
-
+	
+	
+	
+	/*
+	 * Initializes the Jpanel's parameters
+	 */
 	private void initializeButtonP()
 	{
 		setBackground(Color.WHITE);
@@ -45,6 +53,10 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Initialized the IndicatorPanel's local parameters
+	 */
 	private void initializeButtonVar()
 	{
 		this.ledArr = new boolean[NUM_OF_FIELDS];
@@ -99,6 +111,10 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Turns OFF (0) all led indicators of the fields
+	 */
 	private void ledsOff()
 	{
 		for (int i = 0; i < NUM_OF_FIELDS; i++)
@@ -108,7 +124,10 @@ public class ButtonPanel extends JPanel
 	}
 	
 	
-	
+	/*
+	 * Returns the status of the Action and then set it to False,
+	 * If NO action was made returns false, otherwise if an action was made, Returns True
+	 */
 	public boolean getAction()
 	{
 		boolean tmpAction = this.action;
@@ -119,6 +138,9 @@ public class ButtonPanel extends JPanel
 	
 	
 	
+	/*
+	 * Returns the array of the LED indicators of the fields
+	 */
 	public boolean[] getLedArr()
 	{
 		return this.ledArr;
@@ -126,13 +148,18 @@ public class ButtonPanel extends JPanel
 	
 	
 	
+	/*
+	 * Returns the converted value of the textFields (gForce OR rpm)
+	 * It checks what to convert, the gForce or the rpm
+	 * This function does not do the conversion itself, it calls checkTextFieldVal which does the conversion
+	 */
 	public double getTextFieldVal()
 	{
 		double converted = 0;
 		
 		if (this.ledArr[2] == true)
 		{
-			converted = checkTextFieldVal(this.gForce.getText());
+			converted = checkTextFieldVal(this.gForce.getText());//Double.parseDouble(this.gForce.getText());
 			
 			if (converted >= 0 && converted <= 3)
 			{
@@ -143,7 +170,7 @@ public class ButtonPanel extends JPanel
 		{
 			if (this.ledArr[3] == true)
 			{
-				converted = checkTextFieldVal(this.rpm.getText());
+				converted = checkTextFieldVal(this.rpm.getText());//Double.parseDouble(this.rpm.getText());
 				
 				if (converted >= 0 && converted <= 250 && (converted - ((int)converted) == 0.0))
 				{
@@ -155,17 +182,25 @@ public class ButtonPanel extends JPanel
 		return -1;
 	}
 	
+	
+	
+	/*
+	 * Converts a String (gForce and rpm string values) to a double value, and returns it
+	 * This function converts only up to the second digit after the '.'
+	 * INPUT: TextFieldV - the string to convert to a double
+	 */
 	private double checkTextFieldVal(String TextFieldV)
 	{
 		double stringToD = 0;
 		char tmp;
 		int counter = 1;
+		boolean pAppeared = false;
 		
 		for (int i = 0; i < TextFieldV.length(); i++)
 		{
 			tmp = TextFieldV.charAt(i);
 			
-			if (tmp < '0' || tmp > '9')
+			if ((tmp < '0' || tmp > '9') && tmp != '.')
 			{
 				return -1;
 			}
@@ -173,16 +208,28 @@ public class ButtonPanel extends JPanel
 			{
 				if (tmp != '.')
 				{
-					stringToD = (stringToD * 10) + Character.getNumericValue(tmp);
+					if (pAppeared == false)
+					{
+						stringToD = (stringToD * 10) + Character.getNumericValue(tmp);
+					}
+					else
+					{
+						if (tmp != '0' && counter < 3)
+						{
+							stringToD = stringToD + ((double)(Character.getNumericValue(tmp)) / (Math.pow(10, counter)));
+						}
+						
+						counter++;
+					}
 				}
 				else
 				{
-					if (tmp != '0' && counter < 3)
+					if (pAppeared == true)
 					{
-						stringToD = stringToD + ((double)(Character.getNumericValue(tmp)) / (Math.pow(10, counter)));
+						return -1;
 					}
 					
-					counter++;
+					pAppeared = true;
 				}
 			}
 		}
@@ -191,6 +238,10 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Listeners for all the buttons and textFields on the ButtonPanel
+	 */
 	private void Listeners()
 	{
 		buttonListeners();
@@ -198,8 +249,15 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Listeners for all the buttons on the ButtonPanel
+	 */
 	private void buttonListeners()
 	{
+		/*
+		 * Listener for the button 'start'
+		 */
 		this.start.addActionListener(new ActionListener() {
 
 			@Override
@@ -222,6 +280,9 @@ public class ButtonPanel extends JPanel
 		});
 
 
+		/*
+		 * Listener for the button 'stop'
+		 */
 		this.stop.addActionListener(new ActionListener() {
 
 			@Override
@@ -251,6 +312,10 @@ public class ButtonPanel extends JPanel
 		});
 
 
+		
+		/*
+		 * Listener for the button 'editCode'
+		 */
 		this.editCode.addActionListener(new ActionListener() {
 
 			@Override
@@ -276,7 +341,10 @@ public class ButtonPanel extends JPanel
 			}
 		});
 
-
+		
+		/*
+		 * Listener for the button 'confirm'
+		 */
 		this.confirm.addActionListener(new ActionListener() {
 
 			@Override
@@ -298,14 +366,21 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Listener for the textFields on the ButtonPanel
+	 */
 	private void textFieldListeners()
 	{
+		/*
+		 * Listener for the textField 'gForce'
+		 */
 		this.gForce.addFocusListener(new FocusListener() {
 
 			@Override
 			public void focusLost(FocusEvent arg0)
 			{
-				if (gForce.getText().equals(prevG) == false)
+				if (gForce.getText().equals("") == false)
 				{
 					ledArr[2] = true;
 
@@ -322,6 +397,10 @@ public class ButtonPanel extends JPanel
 						}
 					}
 				}
+				else
+				{
+					gForce.setText("g Force");
+				}
 
 				repaint();
 			}
@@ -329,17 +408,20 @@ public class ButtonPanel extends JPanel
 			@Override
 			public void focusGained(FocusEvent arg0)
 			{
-				//Do Nothing
+				gForce.setText("");
 			}
 		});
 
 
+		/*
+		 * Listener for the textField 'rpm'
+		 */
 		this.rpm.addFocusListener(new FocusListener(){
 
 			@Override
 			public void focusLost(FocusEvent arg0)
 			{
-				if (rpm.getText().equals(prevRpm) == false)
+				if (rpm.getText().equals("") == false)
 				{
 					ledArr[3] = true;
 
@@ -356,6 +438,10 @@ public class ButtonPanel extends JPanel
 						}
 					}
 				}
+				else
+				{
+					rpm.setText("rpm");
+				}
 
 				repaint();
 			}
@@ -363,12 +449,17 @@ public class ButtonPanel extends JPanel
 			@Override
 			public void focusGained(FocusEvent arg0)
 			{
-				//Do Nothing
+				rpm.setText("");
 			}
 		});
 	}
 
 
+	
+	
+	/*
+	 * Draws the buttons, textFields, LED indicators and other components on the panel
+	 */
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -377,12 +468,16 @@ public class ButtonPanel extends JPanel
 		Graphics2D g2d = (Graphics2D) g;
 
 		drawTitles(g2d);
-		drawButText(g2d);
+		drawButLed(g2d);
 		drawLines(g2d);
 		drawBorder(g2d);
 	}
 
-
+	
+	
+	/*
+	 * Draws the titles
+	 */
 	private void drawTitles(Graphics2D g2d)
 	{
 		g2d.setColor(Color.BLACK);
@@ -398,7 +493,11 @@ public class ButtonPanel extends JPanel
 	}
 
 
-	private void drawButText(Graphics2D g2d)
+	
+	/*
+	 * Draws the LED indicators of each button and textField
+	 */
+	private void drawButLed(Graphics2D g2d)
 	{
 		int index = 0;
 
@@ -435,6 +534,10 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Draws separation lines between sections 
+	 */
 	private void drawLines(Graphics2D g2d)
 	{
 		g2d.setColor(Color.DARK_GRAY);
@@ -458,6 +561,10 @@ public class ButtonPanel extends JPanel
 	
 	
 	
+	
+	/*
+	 * Draws the border of the panel
+	 */
 	private void drawBorder(Graphics2D g2d)
 	{
 		g2d.setColor(Color.DARK_GRAY);
@@ -466,6 +573,11 @@ public class ButtonPanel extends JPanel
 	}
 
 
+	
+	/*
+	 * Set the correct color for the LED according to the boolean val in the LED array at index 'index'.
+	 * INPUT: index - the index of the LED in the LED array
+	 */
 	private Color setToColor(int index)
 	{
 		if (this.ledArr[index] == false)
