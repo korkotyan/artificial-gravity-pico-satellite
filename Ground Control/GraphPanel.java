@@ -5,35 +5,45 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class GraphPanel extends JPanel
 {
-	private static final int NUM_OF_AXIS_P = 15, NUM_OF_TOTAL_P = 20;
+	private static final short NUM_OF_AXIS_P = 15, NUM_OF_TOTAL_P = 20;
 	
-	private static final int G_X_AXIS = 250, G_RPM_Y_AXIS = 50, G_RPM_Y_LENGTH = 300;
-	private static final int TIME_Y_AXIS = G_RPM_Y_AXIS + G_RPM_Y_LENGTH, TIME_X_LENGTH = 630;
-	private static final int RPM_X_AXIS = G_X_AXIS + TIME_X_LENGTH;
-	private static final int G_RPM_SPACER = G_RPM_Y_LENGTH / NUM_OF_AXIS_P, 
+	private static final short G_X_AXIS = 250, G_RPM_Y_AXIS = 50, G_RPM_Y_LENGTH = 300;
+	private static final short TIME_Y_AXIS = G_RPM_Y_AXIS + G_RPM_Y_LENGTH, TIME_X_LENGTH = 630;
+	private static final short RPM_X_AXIS = G_X_AXIS + TIME_X_LENGTH;
+	private static final short G_RPM_SPACER = G_RPM_Y_LENGTH / NUM_OF_AXIS_P, 
 								TIME_SPACER = (TIME_X_LENGTH - 30) / NUM_OF_TOTAL_P,
 								SPACER = 10;
-	private static final int RESIDUE = 30;
+	private static final short RESIDUE = 30;
 	
 	private static final Font AXIS_TITLE_F = new Font("Arial", Font.PLAIN, 22),
 							BIG_TITLE_F = new Font("Arial", Font.PLAIN, 24),
 							SMALL_TITLE_F = new Font("Arial", Font.PLAIN, 18),
 							SMALL_TITLE_B_F = new Font("Arial", Font.BOLD, 18);
+	private static final short TEXT_F_WIDTH = 80, TEXT_F_HEIGHT = 40;
+	private static final short NUM_TEXT_FIELDS = 4;
 	
-	private JLabel currGForceL, currRPML, gForceDesL, rpmDesL;
+	private JButton confirm;
+	
+	private JTextField gForceS, gForceE, rpmS, rpmE;
 	
 	private double gForceDes, currentGForce;
 	private int rpmDes, currentRpm;
 	
 	private double minGForceRange, maxGForceRange;
 	private int minRpmRange, maxRpmRange;
+	
+	private boolean [] textFieldsArr;
+	private double [] newVal;
 	
 	
 	/*
@@ -140,6 +150,48 @@ public class GraphPanel extends JPanel
 	 */
 	private void initializeGraphVar()
 	{
+this.confirm = new JButton("Confirm");
+		
+		this.gForceS = new JTextField("min");
+		this.gForceE = new JTextField("max");
+		
+		this.rpmS = new JTextField("min");
+		this.rpmE = new JTextField("max");
+		
+		
+		this.add(this.confirm);
+		
+		this.add(this.gForceS);
+		this.add(this.gForceE);
+		
+		this.add(this.rpmS);
+		this.add(this.rpmE);
+		
+		
+		
+		this.gForceS.setBounds(350, 455, TEXT_F_WIDTH, TEXT_F_HEIGHT);
+		this.gForceE.setBounds(350 + TEXT_F_WIDTH + 50, 455, TEXT_F_WIDTH, TEXT_F_HEIGHT);
+		
+		int tmpCalc = (2 * TEXT_F_WIDTH) + 50 + 150;
+		
+		this.rpmS.setBounds(350 + tmpCalc, 455, TEXT_F_WIDTH, TEXT_F_HEIGHT);
+		
+		tmpCalc = tmpCalc + TEXT_F_WIDTH + 50;
+		this.rpmE.setBounds(350 + tmpCalc, 455, TEXT_F_WIDTH, TEXT_F_HEIGHT);
+		
+		
+		this.confirm.setBounds(350 + tmpCalc, 410, TEXT_F_WIDTH, TEXT_F_HEIGHT);
+		
+		
+		this.textFieldsArr = new boolean[NUM_TEXT_FIELDS];
+		this.newVal = new double[NUM_TEXT_FIELDS];
+		
+		
+		
+		Listeners();
+		
+		
+		
 		this.currentGForce = 0;
 		this.currentRpm = 0;
 		
@@ -164,6 +216,244 @@ public class GraphPanel extends JPanel
 		this.currGForceL.setBounds(80, 150, 50, 40);
 		*/
 	}
+	
+	
+	
+	private void Listeners()
+	{
+		buttonListener();
+		textFieldListener();
+	}
+	
+	
+	
+	
+	private void buttonListener()
+	{
+		this.confirm.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				String tmpStr = "";
+				
+				for (int i = 0; i < NUM_TEXT_FIELDS; i++)
+				{
+					if (textFieldsArr[i] == true)
+					{
+						switch (i)
+						{
+						case 0: tmpStr = gForceS.getText(); break;
+						case 1: tmpStr = gForceE.getText(); break;
+						case 2: tmpStr = rpmS.getText(); break;
+						case 3: tmpStr = rpmE.getText(); break;
+						}
+						
+						newVal[i] = checkTextFieldVal(tmpStr);
+					}
+				}
+				
+				
+				
+				for (int i = 0; i < NUM_TEXT_FIELDS; i++)
+				{
+					if (newVal[i] != -1)
+					{
+						switch (i)
+						{
+						case 0: if ((newVal[0] < newVal[1] && textFieldsArr[1] == true) || newVal[0] < maxGForceRange)
+								{
+									minGForceRange = newVal[0];
+								}
+								break;
+								
+						case 1: if ((newVal[1] > newVal[0] && textFieldsArr[0] == true) || newVal[1] > minGForceRange)
+								{
+									maxGForceRange = newVal[1];
+								}
+								break;
+								
+						case 2: if ((newVal[2] < newVal[3] && textFieldsArr[3] == true) || newVal[2] < maxRpmRange)
+								{
+									minRpmRange = (int)newVal[2];
+								}
+								break;
+								
+						case 3: if ((newVal[3] > newVal[2] && textFieldsArr[2] == true) || newVal[3] > minRpmRange)
+								{
+									maxRpmRange = (int)newVal[3];
+								}
+								break;
+						}
+					}
+				}
+				
+				repaint();
+			}
+		});
+	}
+	
+	
+	
+	private void textFieldListener()
+	{
+		this.gForceS.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusLost(FocusEvent arg0)
+			{
+				if (gForceS.getText().equals("") == false)
+				{
+					textFieldsArr[0] = true;
+				}
+				else
+				{
+					gForceS.setText("min");
+				}
+
+				//repaint();
+			}
+
+			@Override
+			public void focusGained(FocusEvent arg0)
+			{
+				gForceS.setText("");
+			}
+		});
+		
+		
+		this.gForceE.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusLost(FocusEvent arg0)
+			{
+				if (gForceE.getText().equals("") == false)
+				{
+					textFieldsArr[1] = true;
+				}
+				else
+				{
+					gForceE.setText("max");
+				}
+
+				//repaint();
+			}
+
+			@Override
+			public void focusGained(FocusEvent arg0)
+			{
+				gForceE.setText("");
+			}
+		});
+		
+		
+		this.rpmS.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusLost(FocusEvent arg0)
+			{
+				if (rpmS.getText().equals("") == false)
+				{
+					textFieldsArr[2] = true;
+				}
+				else
+				{
+					rpmS.setText("min");
+				}
+
+				//repaint();
+			}
+
+			@Override
+			public void focusGained(FocusEvent arg0)
+			{
+				rpmS.setText("");
+			}
+		});
+		
+		
+		
+		this.rpmE.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusLost(FocusEvent arg0)
+			{
+				if (rpmE.getText().equals("") == false)
+				{
+					textFieldsArr[3] = true;
+				}
+				else
+				{
+					rpmE.setText("max");
+				}
+
+				//repaint();
+			}
+
+			@Override
+			public void focusGained(FocusEvent arg0)
+			{
+				rpmE.setText("");
+			}
+		});
+	}
+	
+	
+	
+	/*
+	 * Converts a String (gForce and rpm string values) to a double value, and returns it
+	 * This function converts only up to the second digit after the '.'
+	 * INPUT: TextFieldV - the string to convert to a double
+	 */
+	private double checkTextFieldVal(String TextFieldV)
+	{
+		double stringToD = 0;
+		char tmp;
+		int counter = 1;
+		boolean pAppeared = false;
+		
+		for (int i = 0; i < TextFieldV.length(); i++)
+		{
+			tmp = TextFieldV.charAt(i);
+			
+			if ((tmp < '0' || tmp > '9') && tmp != '.')
+			{
+				return -1;
+			}
+			else
+			{
+				if (tmp != '.')
+				{
+					if (pAppeared == false)
+					{
+						stringToD = (stringToD * 10) + Character.getNumericValue(tmp);
+					}
+					else
+					{
+						if (tmp != '0' && counter < 3)
+						{
+							stringToD = stringToD + ((double)(Character.getNumericValue(tmp)) / (Math.pow(10, counter)));
+						}
+						
+						counter++;
+					}
+				}
+				else
+				{
+					if (pAppeared == true)
+					{
+						return -1;
+					}
+					
+					pAppeared = true;
+				}
+			}
+		}
+		
+		return stringToD;
+	}
+	
+	
 	
 	
 	
@@ -355,6 +645,8 @@ public class GraphPanel extends JPanel
 		drawCurrentMeas(g2d);
 		drawDesVal(g2d);
 		
+		drawSetRangeTitles(g2d);
+		
 		drawGraph(g2d);
 	}
 	
@@ -426,8 +718,14 @@ public class GraphPanel extends JPanel
 	 */
 	private void drawAxisVal(Graphics2D g2d)
 	{
-		double middleG = (this.maxGForceRange - this.minGForceRange) / 2;
-		int middleRPM = (int) ((this.maxRpmRange - this.minRpmRange) / 2);
+		int tmp = 0;
+		
+		double middleG = minGForceRange + (this.maxGForceRange - this.minGForceRange) / 2;
+		
+		tmp = (int)(middleG * 100);
+		middleG = ((double)tmp) / 100;
+		
+		int middleRPM = minRpmRange + ((int) ((this.maxRpmRange - this.minRpmRange) / 2));
 		
 		double tmpCalc;
 		int gPoss;
@@ -443,7 +741,7 @@ public class GraphPanel extends JPanel
 		g2d.setColor(Color.RED);
 		g2d.drawString(Double.toString(this.maxGForceRange), 190, 55);
 		
-		if (middleG != this.gForceDes)
+		if (middleG != this.gForceDes && middleG > minGForceRange && middleG < maxGForceRange)
 		{
 			g2d.drawString(Double.toString(middleG), 200, gPoss);
 		}
@@ -465,7 +763,7 @@ public class GraphPanel extends JPanel
 		
 		
 		
-		tmpCalc = (middleRPM - this.minGForceRange) / (this.maxGForceRange - this.minGForceRange);
+		tmpCalc = ((double)middleRPM - (double)this.minRpmRange) / ((double)this.maxRpmRange - (double)this.minRpmRange);
 		gPoss  = TIME_Y_AXIS - G_RPM_Y_AXIS + 5;
 		gPoss = gPoss - (int)(gPoss * tmpCalc) + G_RPM_Y_AXIS;
 		
@@ -474,7 +772,8 @@ public class GraphPanel extends JPanel
 		g2d.setColor(Color.BLUE);
 		g2d.drawString(Integer.toString(this.maxRpmRange), 915, 55);
 		
-		if (middleRPM != this.rpmDes)
+		
+		if (middleRPM != this.rpmDes && middleRPM > minRpmRange && middleRPM < maxRpmRange)
 		{
 			g2d.drawString(Integer.toString(middleRPM), 895, gPoss);
 		}
@@ -559,6 +858,28 @@ public class GraphPanel extends JPanel
 		g2d.drawRect(80, 330, 52, 25);
 		
 		g2d.setColor(Color.BLACK);
+	}
+	
+	
+	
+	
+	private void drawSetRangeTitles(Graphics2D g2d)
+	{
+		g2d.setFont(SMALL_TITLE_F);
+		g2d.setColor(Color.RED);
+		g2d.drawString("g force from:", 240, 480);
+		g2d.drawString("to:", 240 + (2 * TEXT_F_WIDTH) + 40, 480);
+		
+		g2d.setColor(Color.BLUE);
+		g2d.drawString("rpm from:", 620, 480);
+		g2d.drawString("to:", 620 + (2 * TEXT_F_WIDTH) + 20, 480);
+		
+		
+		g2d.setFont(AXIS_TITLE_F);
+		g2d.setColor(Color.BLACK);
+		
+		g2d.drawString("SET RANGE", 510, 430);
+		g2d.fillRect(510, 432, 129, 2);
 	}
 	
 	

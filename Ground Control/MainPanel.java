@@ -8,8 +8,8 @@ public class MainPanel extends JPanel implements Runnable
 {
 	private static final short OFF = 0, ON1 = 1, ON2 = 2, ERROR = -1;
 	
-	private GraphPanel graphP;
 	private IndicatorPanel indicatorP;
+	private GraphPanel graphP;
 	private ButtonPanel buttonP;
 
 	private boolean running;
@@ -31,8 +31,8 @@ public class MainPanel extends JPanel implements Runnable
 	 */
 	public void createPanels()
 	{
-		this.graphP = new GraphPanel();
 		this.indicatorP = new IndicatorPanel();
+		this.graphP = new GraphPanel();
 		this.buttonP = new ButtonPanel();
 	}
 
@@ -65,8 +65,8 @@ public class MainPanel extends JPanel implements Runnable
 	 */
 	private void initializeMainVar()
 	{
-		add(this.graphP, BorderLayout.EAST);
 		add(this.indicatorP, BorderLayout.CENTER);
+		add(this.graphP, BorderLayout.EAST);
 		add(this.buttonP, BorderLayout.SOUTH);
 
 		this.running  = true;
