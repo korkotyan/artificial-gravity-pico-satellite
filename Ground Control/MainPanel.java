@@ -4,13 +4,18 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import org.zu.ardulink.Link;
+
 public class MainPanel extends JPanel implements Runnable
 {
 	private static final short OFF = 0, ON1 = 1, ON2 = 2, ERROR = -1;
+	private static final String ID_START = "1", ID_STOP = "2", ID_G_FORCE = "3", ID_RPM = "4", 
+								ID_EDIT_CODE = "5";
 	
 	private IndicatorPanel indicatorP;
 	private GraphPanel graphP;
 	private ButtonPanel buttonP;
+	private Link link;
 
 	private boolean running;
 
@@ -31,9 +36,11 @@ public class MainPanel extends JPanel implements Runnable
 	 */
 	public void createPanels()
 	{
+		this.link = Link.getDefaultInstance();
+		
 		this.indicatorP = new IndicatorPanel();
-		this.graphP = new GraphPanel();
-		this.buttonP = new ButtonPanel();
+		this.graphP = new GraphPanel(this.link);
+		this.buttonP = new ButtonPanel(this.link);
 	}
 
 	
@@ -120,6 +127,8 @@ public class MainPanel extends JPanel implements Runnable
 				index++;
 			}
 			
+			String message = "";
+			
 			switch (index)
 			{
 			case 0: this.indicatorP.setLedState(0, ON1);
@@ -127,6 +136,8 @@ public class MainPanel extends JPanel implements Runnable
 					this.indicatorP.setLedState(2, OFF);
 					this.indicatorP.setLedState(4, ON2);
 					this.indicatorP.setLedState(6, OFF);
+					
+					message = message + ID_START;
 					break;
 					
 			case 1: this.indicatorP.setLedState(0, ON2);
@@ -134,6 +145,8 @@ public class MainPanel extends JPanel implements Runnable
 					this.indicatorP.setLedState(2, ON2);
 					this.indicatorP.setLedState(4, OFF);
 					this.indicatorP.setLedState(6, OFF);
+					
+					message = message + ID_STOP;
 					break;
 					
 			case 4: this.indicatorP.setLedState(0, OFF);
@@ -141,6 +154,8 @@ public class MainPanel extends JPanel implements Runnable
 					this.indicatorP.setLedState(2, ON2);
 					this.indicatorP.setLedState(4, OFF);
 					this.indicatorP.setLedState(6, ON2);
+					
+					//editCode
 					break;
 			}
 			
@@ -152,6 +167,8 @@ public class MainPanel extends JPanel implements Runnable
 				{
 					this.graphP.setDesG(g);
 					this.graphP.setDesRpm(-1);
+					
+					message = message + ID_G_FORCE + "[" + Double.toString(g) + "]";
 				}
 			}
 			else
@@ -163,11 +180,26 @@ public class MainPanel extends JPanel implements Runnable
 					{
 						this.graphP.setDesRpm(rpm);
 						this.graphP.setDesG(-1);
+						
+						message = message + ID_RPM + "[" + Integer.toString(rpm) + "]";
 					}
 				}
 			}
 			
+			if (message.equals("") == false)
+			{
+				message = message + "s";
+				
+				this.link.sendCustomMessage(message);
+			}
 			
+			
+		}
+		
+		
+		if (this.graphP.getConnectedB() == false)
+		{
+			this.buttonP.setButtTextEna();
 		}
 	}
 

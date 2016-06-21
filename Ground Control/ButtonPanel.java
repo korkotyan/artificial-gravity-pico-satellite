@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.zu.ardulink.Link;
+
 
 //Action Listener focus lost - http://www.java2s.com/Code/JavaAPI/javax.swing/JTextFieldaddFocusListenerFocusListenerl.htm
 public class ButtonPanel extends JPanel
@@ -23,6 +25,7 @@ public class ButtonPanel extends JPanel
 
 	private JButton start, stop, confirm, editCode;
 	private JTextField gForce, rpm;
+	private Link link;
 
 	//private String prevG = "", prevRpm = "";
 
@@ -34,10 +37,10 @@ public class ButtonPanel extends JPanel
 	/*
 	 * ButtonPanel constructor
 	 */
-	public ButtonPanel()
+	public ButtonPanel(Link link)
 	{
 		initializeButtonP();
-		initializeButtonVar();
+		initializeButtonVar(link);
 	}
 	
 	
@@ -57,8 +60,10 @@ public class ButtonPanel extends JPanel
 	/*
 	 * Initialized the IndicatorPanel's local parameters
 	 */
-	private void initializeButtonVar()
+	private void initializeButtonVar(Link link)
 	{
+		this.link = link;
+		
 		this.ledArr = new boolean[NUM_OF_FIELDS];
 		ledsOff();
 
@@ -66,14 +71,19 @@ public class ButtonPanel extends JPanel
 
 
 		this.start = new JButton("Start");
+		
 		this.stop = new JButton("Stop");
 
+		
 		this.gForce = new JTextField("g force");
+		
 		this.rpm = new JTextField("rpm");
 
 		this.editCode = new JButton("Edit Code");
 
 		this.confirm = new JButton("Confirm");
+		
+		setButtTextEna();
 
 		this.add(this.start);
 		this.add(this.stop);
@@ -109,6 +119,27 @@ public class ButtonPanel extends JPanel
 
 		Listeners();
 	}
+	
+	
+	
+	
+	public void setButtTextEna()
+	{
+		boolean enabled = this.link.isConnected();
+		
+		this.start.setEnabled(enabled);
+		
+		this.stop.setEnabled(enabled);
+
+		this.gForce.setEnabled(enabled);
+		
+		this.rpm.setEnabled(enabled);
+
+		this.editCode.setEnabled(enabled);
+
+		this.confirm.setEnabled(enabled);
+	}
+	
 
 
 	

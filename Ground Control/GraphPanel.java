@@ -14,12 +14,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.RawDataListener;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 
-import com.sun.xml.internal.ws.util.StringUtils;
+
+
+//import com.sun.xml.internal.ws.util.StringUtils;
 
 public class GraphPanel extends JPanel
 {
@@ -40,6 +41,7 @@ public class GraphPanel extends JPanel
 	private static final short TEXT_F_WIDTH = 80, TEXT_F_HEIGHT = 40;
 	private static final short NUM_TEXT_FIELDS = 4;
 	private static final int BOUD_RATE = 9600;
+	private static final String ID_CONNECTED = "0";
 
 	private JButton confirm;
 
@@ -138,10 +140,10 @@ public class GraphPanel extends JPanel
 	/*
 	 * GraphPanel constructor
 	 */
-	public GraphPanel()
+	public GraphPanel(Link link)
 	{
 		initializeGraphP();
-		initializeGraphVar();
+		initializeGraphVar(link);
 		//repaint();
 	}
 
@@ -162,7 +164,7 @@ public class GraphPanel extends JPanel
 	/*
 	 * Initialized the IndicatorPanel's local parameters
 	 */
-	private void initializeGraphVar()
+	private void initializeGraphVar(Link link)
 	{
 		this.confirm = new JButton("Confirm");
 
@@ -201,7 +203,7 @@ public class GraphPanel extends JPanel
 		this.newVal = new double[NUM_TEXT_FIELDS];
 
 
-		this.link = Link.getDefaultInstance();
+		this.link = link;
 		this.connDis = new JButton("Connect");
 		this.comPort = new JTextField("Com Port");
 		this.connectB = true;
@@ -241,6 +243,14 @@ public class GraphPanel extends JPanel
 		this.add(this.currGForceL);
 		this.currGForceL.setBounds(80, 150, 50, 40);
 		 */
+	}
+	
+	
+	
+	
+	public boolean getConnectedB()
+	{
+		return this.connectB;
 	}
 
 
@@ -362,7 +372,7 @@ public class GraphPanel extends JPanel
 					{
 						try {
 
-							link.connect(cp);
+							link.connect(cp, 9600);
 						}
 						catch(Exception ex) {
 							ex.printStackTrace();
@@ -383,19 +393,9 @@ public class GraphPanel extends JPanel
 							e1.printStackTrace();
 						}
 						
+						String tmpMessage = ID_CONNECTED + "s";
 						
-						
-						
-						System.out.println("----------");
-						String tmpTest = "aa";
-						link.sendCustomMessage(tmpTest);
-						
-						System.out.println("-----------");
-						
-						
-						
-						
-						
+						link.sendCustomMessage(tmpMessage);
 					}
 					else
 					{
