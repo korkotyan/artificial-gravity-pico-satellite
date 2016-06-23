@@ -7,6 +7,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.zu.ardulink.Link;
+import org.zu.ardulink.RawDataListener;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
@@ -42,6 +48,7 @@ public class GraphPanel extends JPanel
 	private static final short NUM_TEXT_FIELDS = 4;
 	private static final int BOUD_RATE = 9600;
 	private static final String ID_CONNECTED = "0";
+	private static final String DATA_FILE_PATH = "src/recData/";
 
 	private JButton confirm;
 
@@ -134,6 +141,11 @@ public class GraphPanel extends JPanel
 	private JTextField comPort;
 	private boolean connectB;
 
+	private File file;
+	private FileWriter writer;
+	private BufferedWriter bw;
+	private PrintWriter out;
+	private boolean streamStatus;
 	int tmp = 0;
 
 
@@ -207,10 +219,10 @@ public class GraphPanel extends JPanel
 		this.connDis = new JButton("Connect");
 		this.comPort = new JTextField("Com Port");
 		this.connectB = true;
-		
+
 		this.add(this.connDis);
 		this.add(this.comPort);
-		
+
 		this.connDis.setBounds(120, 450, TEXT_F_WIDTH + 20, TEXT_F_HEIGHT);
 		this.comPort.setBounds(10, 450, TEXT_F_WIDTH, TEXT_F_HEIGHT);
 
@@ -244,10 +256,10 @@ public class GraphPanel extends JPanel
 		this.currGForceL.setBounds(80, 150, 50, 40);
 		 */
 	}
-	
-	
-	
-	
+
+
+
+
 	public boolean getConnectedB()
 	{
 		return this.connectB;
@@ -255,11 +267,140 @@ public class GraphPanel extends JPanel
 
 
 
+
+
+	private void writeToFile(String dataOut)
+	{
+		if (this.streamStatus == true)
+		{
+			this.out.println(dataOut);
+		}
+	}
+
+
+
+
+
+	private void setFile()
+	{
+		this.streamStatus = false;
+		this.file = new File(DATA_FILE_PATH + "data1.txt"); //src/recData/
+		int i = 1;
+		while (this.file.exists() == true)
+		{
+			i++;
+			this.file.renameTo(new File(DATA_FILE_PATH + "data" + i + ".txt"));
+		}
+
+		try {
+			this.file.createNewFile();		//creates a file
+			this.writer = new FileWriter(file, true);		//creates a FileWriter
+			this.bw = new BufferedWriter(this.writer);		//creates a BuffredWriter
+			this.out = new PrintWriter(this.bw);			//creates a PrintWriter
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+
+
+
+	private void messageParssing(String message)
+	{
+		int cIndex = 0;
+		String time = "";
+		String gForce = "";
+		String rpm = "";
+
+		if (message.charAt(cIndex) == 't')
+		{
+			cIndex++;
+
+			int endIndexT = message.indexOf('g');
+
+			if (endIndexT != -1)
+			{
+				time = message.substring(cIndex, endIndexT);
+
+				cIndex = endIndexT + 1;
+
+				endIndexT = message.indexOf('r');
+
+				if (endIndexT != -1)
+				{
+					gForce = message.substring(cIndex, endIndexT);
+
+					cIndex = endIndexT + 1;
+
+					rpm = message.substring(cIndex);
+				}
+			}
+		}
+
+		if (time.equals(""))
+		{
+			time = "time: ERROR";
+		}
+
+		if (gForce.equals(""))
+		{
+			gForce = "g force: ERROR";
+		}
+
+		if (rpm.equals(""))
+		{
+			rpm = "rpm: ERROR";
+		}
+
+		String dataOut = "time: " + time + ",    g force: " + gForce + ",    rpm: " + rpm;
+		System.out.println("REC: [" + dataOut + "]");
+		
+		
+		generateGraphPoint(Double.parseDouble(gForce), Integer.parseInt(rpm), Long.parseLong(time));
+
+		writeToFile(dataOut);
+	}
+
+
+
+
+
 	private void Listeners()
 	{
 		connectionListener();
+		rawDataListener();
 		buttonListener();
 		textFieldListener();
+	}
+
+
+
+
+	private void rawDataListener()
+	{
+		this.link.addRawDataListener(new RawDataListener() {
+
+			@Override
+			public void parseInput(String arg0, int arg1, int[] arg2)
+			{
+				String message = "";
+
+				for (int i = 0; i < arg1; i++)
+				{
+					message = message + ((char)arg2[i]);
+				}
+
+
+				if (streamStatus == true)
+				{
+					messageParssing(message);
+				}
+
+
+			}
+		});
 	}
 
 
@@ -275,6 +416,9 @@ public class GraphPanel extends JPanel
 				System.out.println("Board Disconnected");
 				connectB = true;
 				connDis.setText("Connect");
+
+				streamStatus = false;
+				out.close();			//closes the stream
 			}
 
 			@Override
@@ -283,6 +427,10 @@ public class GraphPanel extends JPanel
 				System.out.println("Board Connected");
 				connectB = false;
 				connDis.setText("Disconnect");
+
+				setFile();
+
+				streamStatus = true;
 			}
 		});
 	}
@@ -383,8 +531,8 @@ public class GraphPanel extends JPanel
 
 							System.out.println("!!! ERROR: " + message + " !!!");
 						}
-						
-						
+
+
 						try {
 							System.out.println("wait for a while");
 							Thread.sleep(3000);
@@ -392,9 +540,9 @@ public class GraphPanel extends JPanel
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
-						
+
 						String tmpMessage = ID_CONNECTED + "s";
-						
+
 						link.sendCustomMessage(tmpMessage);
 					}
 					else
@@ -658,7 +806,7 @@ public class GraphPanel extends JPanel
 
 		for (int i = 0; i < this.forGraph.length; i++)
 		{
-			this.forGraph[i] = new GraphPoint(0, 0, 0);
+			this.forGraph[i] = new GraphPoint(-1, -1, -1);
 		}
 	}
 
@@ -838,11 +986,45 @@ public class GraphPanel extends JPanel
 		}
 
 
+		double tmpCalc, cG;
+		int yPoss = TIME_Y_AXIS - G_RPM_Y_AXIS, cR;
+		int tmpIndex = this.forGIndex;
+
 		g2d.setColor(Color.BLACK);
 		for (int counter = 1; counter <= NUM_OF_TOTAL_P; counter++)
 		{
-			int tmpX = G_X_AXIS + (counter * TIME_SPACER);
+			g2d.setColor(Color.BLACK);
+			//int tmpX = G_X_AXIS + (counter * TIME_SPACER);
+			int tmpX = RPM_X_AXIS - (counter * TIME_SPACER);
 			g2d.drawLine(tmpX, TIME_Y_AXIS, tmpX, TIME_Y_AXIS + SPACER);
+
+
+			tmpIndex--;
+			
+			if (tmpIndex == -1)
+			{
+				tmpIndex = NUM_OF_TOTAL_P - 1;
+			}
+
+			if (this.forGraph[tmpIndex].getTime() != -1)
+			{
+				cG = this.forGraph[tmpIndex].getGForce();
+				if (cG >= this.minGForceRange && cG < this.maxGForceRange)
+				{
+					g2d.setColor(Color.RED);
+					tmpCalc = (cG - this.minGForceRange) / (this.maxGForceRange - this.minGForceRange);
+					g2d.fillOval(tmpX-3, (yPoss - (int)(yPoss * tmpCalc) + G_RPM_Y_AXIS - 3), 6, 6);
+				}
+
+				cR = this.forGraph[tmpIndex].getRpm();
+				if (cR >= this.minRpmRange && cR < this.maxRpmRange)
+				{
+					g2d.setColor(Color.BLUE);
+					tmpCalc = ((double)(cR) - (double)(this.minRpmRange)) / ((double)(this.maxRpmRange) - (double)(this.minRpmRange));
+					g2d.fillOval(tmpX-3, (yPoss - (int)(yPoss * tmpCalc) + G_RPM_Y_AXIS - 3), 6, 6);
+				}
+			}
+
 		}
 	}
 
