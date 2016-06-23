@@ -234,17 +234,17 @@ void speedController()
     singleIncDecCounter = 0;
   }
 
-  Serial.print(" -- time: ");
-  Serial.println((millis() - time));
+  //Serial.print(" -- time: ");
+  //Serial.println((millis() - time));
 }
 
 
 void checkGravityInput()
 {
-  if (gravity < 0 || gravity > 5)
+  if (gravity < 0 || gravity > 3)
   {
-    Serial.print("Bad Gravity, set to ");
-    gravity = 2.0;
+    //Serial.print("Bad Gravity, set to ");
+    gravity = desGravity;
     //gravity = prevGravity;
   }
 }
@@ -262,6 +262,14 @@ void waitForInput()
     time = millis();
   }
   //Serial.println("reveived");
+}
+
+
+
+void sendMessage()
+{
+  Serial.write(255);
+  Serial.flush();
 }
 
 void readBT()
@@ -282,21 +290,21 @@ void readBT()
           negative = (int)(rec - '0');
           if (negative == 1)
           {
-            Serial.print("-");
+            //Serial.print("-");
           }
           break;
         case 1:
           units = (int)rec - '0';
-          Serial.print(rec);
+          //Serial.print(rec);
           break;
         case 2:
           tenths = (int)rec - '0';
-          Serial.print(".");
-          Serial.print(rec);
+          //Serial.print(".");
+          //Serial.print(rec);
           break;
         case 3:
           hundredths = (int)rec - '0';
-          Serial.print(rec);
+          //Serial.print(rec);
           break;
         case 4:
           checksum = (negative + units + tenths + hundredths) % 10;
@@ -308,13 +316,21 @@ void readBT()
             {
               gravity = gravity * (-1.0);
             }
-            Serial.print(" OK - ");
+            //Serial.print(" OK - ");
+            
             checkGravityInput();
-            Serial.println(gravity);
+            Serial.print("t");
+            Serial.print(millis() - time);
+            Serial.print("g");
+            Serial.print(gravity);
+            Serial.print("r");
+            Serial.print(150);
+            sendMessage();
           }
           else
           {
-            Serial.println(" FAILED");
+            Serial.print("FAILED");
+            sendMessage();
           }
       }
       counter++;
@@ -322,7 +338,9 @@ void readBT()
   }
   if (counter < 5)
   {
-    Serial.println("less than 6 bytes received");
+    //Serial.println("less than 6 bytes received");
+    Serial.print("FAILED");
+    sendMessage();
     while(rec != '!')
     {
       if (BTSerial.available())
