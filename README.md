@@ -15,8 +15,11 @@ I was always fascinated by Astrophysics, so here I am working on creating gravit
 This project obviously requires some hardware.
 - 2 microcontrollers (I am using an Arduino MEGA and NANO)
 - Speed controller (I am using the L298N module)
-- Bluetooth modules (I am using HC-05)
-- DC motor brushed/brushless (I am using a 300rpm brushed motor)
+- 2 Bluetooth modules (I am using HC-05)
+- 12V DC motor brushed/brushless (I am using a 300rpm brushed motor)
 - Accelerometer module (I am using a ADXL335)
 - 12V Battery (I am using a 3000mAh 12V Lithium-ion battery)
+- A centrifuge with a radius of 0.04 m (I 3D printed it), the accelerometer is located on the perimeter of the centrifuge (4 cm radius), the Arduino NANO and the Bluetooth module are placed on the centrifuge in a way that they do not interfere with the rotation of the cetrifuge.
+- A 4 wire (or more, usually sold with 6 wires) 300 rpm slip ring (was not aware of its existence when started, may not need the Bluetooth modules and the Arduino NANO, but the slip ring is needed anyway).
+- Some form of a small container (I built it from wood, with 10x10x10 cm^3 dimensions, the height could be changed), wihtoud 4 walls (the remaining 2 walls should be parallel and play as the floor and ceiling of the container), also the container shoud rest on 4 short legs (~3.5 cm of space between the floor of the container and the surface it is palced on).
 
