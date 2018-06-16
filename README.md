@@ -1,4 +1,4 @@
-##Synopsis -
+##<bSynopsis -</b>
 In this project there will be created artificial gravity on the border of a centrifuge inside a pico satellite, by creating centrifugal force through rotation.
 Inside the pico satellite will be a DC motor that will rotate the centrifuge at a  rate of about 150 RPM for a 0.04m (4cm) centrifuge.
 The centrifuge will contain a microcontroller (Arduino NANO), Accelerometer module and a Bluetooth module.
