@@ -11,7 +11,8 @@ The artificial gravity on the border of the centrifuge should be a constant ~1G.
 I am a Software Engineering student, this is my final year. In the final year the students have to work on a project of a span of a year.
 I was always fascinated by Astrophysics, so here I am working on creating gravity where there is none.
 
-##Components - /n
+##Components
+
 This project obviously requires some hardware.
 - 2 microcontrollers (I am using an Arduino MEGA and NANO)
 - Speed controller (I am using the L298N module)
